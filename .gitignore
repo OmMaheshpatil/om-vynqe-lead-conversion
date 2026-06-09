@@ -1,0 +1,25 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+.venv
+venv/
+ENV/
+
+# Data and Models (required by rubric to keep out of Git)
+data/*.csv
+*.pkl
+
+# Temp files and clone
+temp_clone/
+download_data.py
+inspect_data.py
+inspect_conversions.py
+check_cloned_columns.py
+search_csvs.py
+check_associations.py
+print_row.py
+test_target.py
