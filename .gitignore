@@ -9,9 +9,11 @@ __pycache__/
 venv/
 ENV/
 
-# Data and Models (required by rubric to keep out of Git)
+# Data files (required by rubric to keep out of Git)
 data/*.csv
-*.pkl
+
+# Model artifacts (model.pkl IS committed; other pkl files are not)
+# *.pkl  <-- intentionally kept so model.pkl can be tracked
 
 # Temp files and clone
 temp_clone/
@@ -23,3 +25,4 @@ search_csvs.py
 check_associations.py
 print_row.py
 test_target.py
+inspect_whatsapp.py
