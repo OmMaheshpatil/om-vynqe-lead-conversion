@@ -38,46 +38,19 @@ DROP_COLS = [
     "timestamp", "page_url",
 ]
 
-# Features we engineer at the lead level
+# Features we engineer at the lead level (aligned with Task 3 predict inputs)
 FEATURE_COLUMNS = [
-    "session_count",
-    "total_interactions",
-    "total_time_spent",
-    "avg_time_per_page",
-    "avg_scroll_depth",
-    "max_scroll_depth",
-    "total_clicks",
-    "avg_page_depth",
-    "max_page_depth",
-    "unique_pages_visited",
+    "pages_visited",
+    "time_spent_minutes",
     "demo_requests",
     "pricing_views",
     "whatsapp_clicks",
     "email_opens",
-    "document_downloads",
-    "webinar_registrations",
-    "free_trial_starts",
-    "contact_form_submits",
-    "case_study_views",
-    "blog_reads",
-    "form_completed_count",
-    "avg_mouse_activity",
-    "is_return_visitor_flag",
-    "avg_session_gap_days",
-    "max_funnel_stage",
-    "decision_stage_interactions",
-    "evaluation_stage_interactions",
+    "session_count",
+    "days_since_first_visit",
     "source_encoded",
     "company_size_encoded",
     "segment_encoded",
-    "region_encoded",
-    "device_type_encoded",
-    "industry_encoded",
-    "funding_stage_encoded",
-    "job_role_encoded",
-    "first_touch_channel_encoded",
-    "employee_count",
-    "company_age_years",
 ]
 
 # Funnel stage ordering for ordinal encoding
@@ -211,52 +184,36 @@ def engineer_features(
     interactions: pd.DataFrame,
 ) -> pd.DataFrame:
     """
-    Build a rich feature matrix at the lead level by aggregating interaction
-    behaviour and encoding lead-level categoricals.
+    Build a feature matrix at the lead level by aggregating interaction
+    behaviour and encoding lead-level categoricals (source and company_size).
 
     Returns a DataFrame indexed by lead_id with all FEATURE_COLUMNS present.
     """
+    # Calculate days since first visit
+    time_agg = interactions.groupby("lead_id")["timestamp"].agg(["min", "max"])
+    days_since = (time_agg["max"] - time_agg["min"]).dt.days.rename("days_since_first_visit")
 
     # --- Interaction aggregation ------------------------------------------------
     agg_features = interactions.groupby("lead_id").agg(
         session_count=("session_id", "nunique"),
-        total_interactions=("interaction_id", "count"),
-        total_time_spent=("time_on_page_seconds", "sum"),
-        avg_time_per_page=("time_on_page_seconds", "mean"),
-        avg_scroll_depth=("scroll_depth_percent", "mean"),
-        max_scroll_depth=("scroll_depth_percent", "max"),
-        total_clicks=("click_count", "sum"),
-        avg_page_depth=("page_depth", "mean"),
-        max_page_depth=("page_depth", "max"),
-        unique_pages_visited=("page_name", "nunique"),
-        form_completed_count=("form_completed", "sum"),
-        avg_mouse_activity=("mouse_activity_score", "mean"),
-        is_return_visitor_flag=("is_return_visitor", "max"),
-        avg_session_gap_days=("previous_session_gap_days", "mean"),
+        pages_visited=("page_name", "nunique"),
+        time_spent_seconds=("time_on_page_seconds", "sum"),
     )
+    agg_features["time_spent_minutes"] = agg_features["time_spent_seconds"] / 60.0
+    agg_features = agg_features.drop(columns=["time_spent_seconds"])
+    agg_features = agg_features.join(days_since, how="left")
 
     # --- Event-based count features --------------------------------------------
     event_counts = _count_events(interactions)
     agg_features = agg_features.join(event_counts, how="left")
 
-    # --- Funnel stage features -------------------------------------------------
-    interactions["funnel_ordinal"] = interactions["funnel_stage"].map(FUNNEL_ORDER).fillna(0)
-    funnel_feats = interactions.groupby("lead_id").agg(
-        max_funnel_stage=("funnel_ordinal", "max"),
-        decision_stage_interactions=("funnel_stage", lambda s: (s == "Decision").sum()),
-        evaluation_stage_interactions=("funnel_stage", lambda s: (s == "Evaluation").sum()),
-    )
-    agg_features = agg_features.join(funnel_feats, how="left")
-
     # --- Merge with lead-level data --------------------------------------------
     df = leads[["lead_id"]].drop_duplicates().copy()
     df = df.merge(agg_features.reset_index(), on="lead_id", how="left")
 
-    # Bring in lead-level fields
+    # Bring in lead-level fields (only those needed for Task 3)
     lead_cols = [
-        "lead_id", "source", "company_size", "lead_segment", "region",
-        "device_type", "industry", "funding_stage", "job_role",
-        "first_touch_channel", "employee_count", "company_age_years",
+        "lead_id", "source", "company_size", "lead_segment"
     ]
     existing_lead_cols = [c for c in lead_cols if c in leads.columns]
     lead_dedup = leads[existing_lead_cols].drop_duplicates(subset=["lead_id"], keep="first")
@@ -267,12 +224,6 @@ def engineer_features(
         "source": "source_encoded",
         "company_size": "company_size_encoded",
         "lead_segment": "segment_encoded",
-        "region": "region_encoded",
-        "device_type": "device_type_encoded",
-        "industry": "industry_encoded",
-        "funding_stage": "funding_stage_encoded",
-        "job_role": "job_role_encoded",
-        "first_touch_channel": "first_touch_channel_encoded",
     }
     label_encoders: dict[str, LabelEncoder] = {}
     for raw_col, enc_col in cat_encode_map.items():
@@ -281,12 +232,15 @@ def engineer_features(
             df[enc_col] = le.fit_transform(df[raw_col].astype(str))
             label_encoders[raw_col] = le
 
-    # Fill any remaining NaN with 0
-    df = df.fillna(0)
-
     # Keep only feature columns (+ lead_id for joining target later)
     final_cols = ["lead_id"] + [c for c in FEATURE_COLUMNS if c in df.columns]
     df = df[final_cols]
+
+    # Fill any remaining NaN with 0 and ensure numeric types
+    df = df.fillna(0)
+    for col in df.columns:
+        if col != "lead_id":
+            df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
 
     return df, label_encoders
 
