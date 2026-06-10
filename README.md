@@ -1,4 +1,4 @@
-﻿# 🎯 Lead Conversion Prediction API
+# 🎯 Lead Conversion Prediction API
 
 > An end-to-end Machine Learning pipeline and production-ready FastAPI service to predict B2B lead-to-customer conversion probability using behavioral and firmographic data.
 
@@ -301,29 +301,31 @@ Open the interactive API docs at: [http://127.0.0.1:8000/docs](http://127.0.0.1:
 
 **Input Fields:**
 
-| Field | Type | Required | Example | Description |
-|-------|------|:--------:|---------|-------------|
-| `session_count` | `int` | Yes | `4` | Number of unique sessions |
-| `total_interactions` | `int` | Yes | `15` | Total number of web events |
-| `total_time_spent` | `float` | Yes | `420.0` | Total time on site (seconds) |
-| `demo_requests` | `int` | Yes | `1` | Number of demo requests submitted |
-| `pricing_views` | `int` | Yes | `3` | Number of pricing page views |
-| `whatsapp_clicks` | `int` | Yes | `2` | Number of WhatsApp button clicks |
-| `email_opens` | `int` | Yes | `0` | Number of email opens |
-| `source` | `string` | Yes | `"Google"` | Acquisition channel |
-| `company_size` | `string` | Yes | `"Medium"` | Company size tier |
-| `segment` | `string` | Yes | `"Mid-Market"` | Business segment |
+| Field | Type | Required | Default | Example | Description |
+|-------|------|:--------:|:-------:|---------|-------------|
+| `pages_visited` | `int` | No | `1` | `14` | Number of unique pages visited |
+| `time_spent_minutes` | `float` | No | `0.0` | `45.0` | Total time spent on site (minutes) |
+| `demo_requests` | `int` | No | `0` | `1` | Number of demo requests |
+| `pricing_views` | `int` | No | `0` | `3` | Number of pricing page views |
+| `whatsapp_clicks` | `int` | No | `0` | `2` | Number of WhatsApp button clicks |
+| `email_opens` | `int` | No | `0` | `0` | Number of email opens |
+| `session_count` | `int` | No | `1` | `4` | Number of unique sessions |
+| `days_since_first_visit` | `int` | No | `0` | `12` | Days between first and last visit |
+| `source` | `string` | No | `"Direct"` | `"Google"` | Acquisition source |
+| `company_size` | `string` | No | `"Small"` | `"Medium"` | Company size tier |
+| `segment` | `string` | No | `"Mid-Market"` | `"Mid-Market"` | Lead segment |
 
 **Example Request:**
 ```json
 {
-  "session_count": 4,
-  "total_interactions": 15,
-  "total_time_spent": 420.0,
+  "pages_visited": 14,
+  "time_spent_minutes": 45.0,
   "demo_requests": 1,
   "pricing_views": 3,
   "whatsapp_clicks": 2,
   "email_opens": 0,
+  "session_count": 4,
+  "days_since_first_visit": 12,
   "source": "Google",
   "company_size": "Medium",
   "segment": "Mid-Market"
@@ -355,22 +357,20 @@ Open the interactive API docs at: [http://127.0.0.1:8000/docs](http://127.0.0.1:
 **Example Request:**
 ```json
 {
-  "conversion_probability": 0.78,
+  "conversion_probability": 0.39,
   "demo_requests": 1,
-  "pricing_views": 3,
-  "session_count": 5,
-  "email_opens": 0
+  "pricing_views": 4,
+  "session_count": 8
 }
 ```
 
 **Example Response:**
 ```json
 {
-  "summary": "This lead shows exceptional interest with a demo request and strong engagement across multiple sessions.",
+  "summary": "This lead requires more engagement before conversion is likely. Focus on product education and use case alignment.",
   "factors": [
     "Demo request submitted (high intent)",
-    "Multiple pricing page visits (strong interest)",
-    "Multiple sessions indicate strong engagement"
+    "Multiple pricing page visits (strong interest)"
   ]
 }
 ```

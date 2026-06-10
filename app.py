@@ -81,26 +81,28 @@ async def startup_event():
 
 class PredictionInput(BaseModel):
     """Input schema for /predict endpoint"""
-    session_count: int
-    total_interactions: int
-    total_time_spent: float
-    demo_requests: int
-    pricing_views: int
-    whatsapp_clicks: int
-    email_opens: int
-    source: str  # "Google", "Referral", "LinkedIn", etc.
-    company_size: str  # "Small", "Medium", "Enterprise", "Large"
-    segment: str  # "Startup", "SMB", "Enterprise", "Mid-Market"
+    pages_visited: int = 1
+    time_spent_minutes: float = 0.0
+    demo_requests: int = 0
+    pricing_views: int = 0
+    whatsapp_clicks: int = 0
+    email_opens: int = 0
+    session_count: int = 1
+    days_since_first_visit: int = 0
+    source: str = "Direct"  # "Google", "Referral", "LinkedIn", etc.
+    company_size: str = "Small"  # "Small", "Medium", "Enterprise", "Large"
+    segment: Optional[str] = "Mid-Market"  # "Startup", "SMB", "Enterprise", "Mid-Market"
 
     model_config = {"json_schema_extra": {
         "examples": [{
-            "session_count": 4,
-            "total_interactions": 15,
-            "total_time_spent": 420.0,
+            "pages_visited": 14,
+            "time_spent_minutes": 45.0,
             "demo_requests": 1,
             "pricing_views": 3,
             "whatsapp_clicks": 2,
             "email_opens": 0,
+            "session_count": 4,
+            "days_since_first_visit": 12,
             "source": "Google",
             "company_size": "Medium",
             "segment": "Mid-Market"
@@ -119,10 +121,10 @@ class PredictionOutput(BaseModel):
 class ExplanationInput(BaseModel):
     """Input schema for /explain endpoint"""
     conversion_probability: float
-    demo_requests: int
-    pricing_views: int
-    session_count: int
-    email_opens: int
+    demo_requests: int = 0
+    pricing_views: int = 0
+    session_count: int = 0
+    email_opens: int = 0
 
 
 class ExplanationOutput(BaseModel):
@@ -168,13 +170,14 @@ def prepare_features(input_data: PredictionInput) -> np.ndarray:
     # Reconstruct the feature vector in exact order expected by the model
     # Note: 'email_opens' might be dropped if it had zero variance during training
     raw_feats = {
-        "session_count": input_data.session_count,
-        "total_interactions": input_data.total_interactions,
-        "total_time_spent": input_data.total_time_spent,
+        "pages_visited": input_data.pages_visited,
+        "time_spent_minutes": input_data.time_spent_minutes,
         "demo_requests": input_data.demo_requests,
         "pricing_views": input_data.pricing_views,
         "whatsapp_clicks": input_data.whatsapp_clicks,
         "email_opens": input_data.email_opens,
+        "session_count": input_data.session_count,
+        "days_since_first_visit": input_data.days_since_first_visit,
         "source_encoded": source_encoded,
         "company_size_encoded": size_encoded,
         "segment_encoded": segment_encoded,
