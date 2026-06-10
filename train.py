@@ -37,7 +37,7 @@ import xgboost as xgb
 
 from utils import load_and_preprocess_data
 
-# ─── configuration ───────────────────────────────────────────────────────────
+# Configuration
 RANDOM_STATE = 42
 TEST_SIZE = 0.2
 CV_FOLDS = 5
@@ -49,7 +49,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 def train_and_evaluate() -> None:
     """End-to-end training pipeline."""
 
-    # ===== 1. LOAD & PREPROCESS =====
+    # Load & preprocess data
     X, y, feature_names, label_encoders = load_and_preprocess_data()
 
     # Drop zero-variance features (e.g. email_opens)
@@ -59,7 +59,7 @@ def train_and_evaluate() -> None:
         X = X.drop(columns=zero_var_cols)
         feature_names = [f for f in feature_names if f not in zero_var_cols]
 
-    # ===== 2. TRAIN/TEST SPLIT =====
+    # Train/test split
     print("\n" + "=" * 60)
     print("MODEL TRAINING")
     print("=" * 60)
@@ -74,12 +74,12 @@ def train_and_evaluate() -> None:
     print(f"   Test:  {X_test.shape[0]} samples ({y_test.sum()} positives, "
           f"{(y_test.sum() / len(y_test) * 100):.1f}%)")
 
-    # ===== 3. SCALE FEATURES =====
+    # Scale features
     scaler = StandardScaler()
     X_train_scaled = scaler.fit_transform(X_train)
     X_test_scaled = scaler.transform(X_test)
 
-    # ===== 4. DEFINE MODELS =====
+    # Define models
     print("\n2. Training models...\n")
 
     models = {
@@ -121,7 +121,7 @@ def train_and_evaluate() -> None:
         },
     }
 
-    # ===== 5. TRAIN & EVALUATE =====
+    # Train and evaluate models
     results = {}
     best_model = None
     best_model_name = ""
@@ -186,7 +186,7 @@ def train_and_evaluate() -> None:
             best_model = model
             best_model_name = name
 
-    # ===== 6. FEATURE IMPORTANCE =====
+    # Extract feature importances
     print("\n3. Extracting feature importances...")
 
     importances = {}
@@ -208,7 +208,7 @@ def train_and_evaluate() -> None:
         for i, (feat, imp) in enumerate(list(importances.items())[:10]):
             print(f"   {i+1:2d}. {feat:<35s} {imp:.4f}")
 
-    # ===== 7. THRESHOLD OPTIMISATION =====
+    # Optimize classification threshold for F1-score
     print("\n4. Optimising classification threshold for F1-score...")
     X_te_final = X_test_scaled if models[best_model_name]["use_scaled"] else X_test
     y_pred_proba_final = best_model.predict_proba(X_te_final)[:, 1]
@@ -224,7 +224,7 @@ def train_and_evaluate() -> None:
 
     print(f"   [OK] Optimal threshold: {best_threshold:.4f} (F1 = {best_threshold_f1:.4f} vs 0.5 threshold F1 = {best_f1:.4f})")
 
-    # ===== 8. SAVE ARTEFACTS =====
+    # Save artifacts
     print(f"\n5. Saving best model ({best_model_name})...")
 
     # Save model bundle
@@ -295,7 +295,7 @@ def train_and_evaluate() -> None:
         except Exception as e:
             print(f"   [WARNING] Failed to save feature importance plot: {e}")
 
-    # ===== 9. CLASSIFICATION REPORT =====
+    # Detailed classification report
     print(f"\n6. Detailed Classification Report at Optimal Threshold ({best_threshold:.4f}):\n")
     y_pred_final = (y_pred_proba_final >= best_threshold).astype(int)
     print(classification_report(y_test, y_pred_final, target_names=["Not Converted", "Converted"]))

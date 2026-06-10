@@ -22,7 +22,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 from typing import Optional, List
 
-# ---- App setup -------------------------------------------------------------
+# App setup
 
 app = FastAPI(
     title="Lead Conversion Prediction API",
@@ -41,7 +41,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ---- Load model at startup -------------------------------------------------
+# Load model at startup 
 
 MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model.pkl")
 METRICS_PATH = os.path.join(
@@ -77,7 +77,7 @@ async def startup_event():
     load_model()
 
 
-# ---- Request / Response schemas --------------------------------------------
+# Request / Response schemas 
 
 class PredictionInput(BaseModel):
     """Input schema for /predict endpoint"""
@@ -133,7 +133,7 @@ class ExplanationOutput(BaseModel):
     factors: List[str]
 
 
-# ---- Helper functions -------------------------------------------------------
+# Helper functions 
 
 def prepare_features(input_data: PredictionInput) -> np.ndarray:
     """Convert input data to encoded feature vector for the model."""
@@ -208,7 +208,7 @@ def get_risk_level(probability: float) -> str:
         return "high"
 
 
-# ---- Endpoints --------------------------------------------------------------
+# Endpoints
 
 @app.get("/")
 async def root():
@@ -320,7 +320,7 @@ async def explain(input_data: ExplanationInput):
         raise HTTPException(status_code=400, detail=str(e))
 
 
-# ---- Run service ------------------------------------------------------------
+#Run service 
 
 if __name__ == "__main__":
     import uvicorn

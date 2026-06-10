@@ -24,7 +24,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
-# ─── constants ───────────────────────────────────────────────────────────────
+# Constants
 DATA_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
 LEADS_PATH = os.path.join(DATA_DIR, "leads.csv")
 INTERACTIONS_PATH = os.path.join(DATA_DIR, "interactions.csv")
@@ -61,7 +61,7 @@ FUNNEL_ORDER = {
     "Decision": 3,
 }
 
-# ─── data loading ────────────────────────────────────────────────────────────
+# Data loading
 
 def load_raw_data(
     leads_path: str = LEADS_PATH,
@@ -80,7 +80,7 @@ def load_raw_data(
     return leads, interactions
 
 
-# ─── target derivation ───────────────────────────────────────────────────────
+# Target derivation
 
 def derive_target(leads: pd.DataFrame) -> pd.DataFrame:
     """
@@ -110,7 +110,7 @@ def derive_target(leads: pd.DataFrame) -> pd.DataFrame:
     return leads
 
 
-# ─── cleaning ────────────────────────────────────────────────────────────────
+# Cleaning
 
 def clean_interactions(interactions: pd.DataFrame) -> pd.DataFrame:
     """Remove future timestamps and fill missing categorical values."""
@@ -177,7 +177,7 @@ def clean_leads(leads: pd.DataFrame) -> pd.DataFrame:
     return leads
 
 
-# ─── feature engineering ─────────────────────────────────────────────────────
+# Feature engineering
 
 def engineer_features(
     leads: pd.DataFrame,
@@ -193,7 +193,7 @@ def engineer_features(
     time_agg = interactions.groupby("lead_id")["timestamp"].agg(["min", "max"])
     days_since = (time_agg["max"] - time_agg["min"]).dt.days.rename("days_since_first_visit")
 
-    # --- Interaction aggregation ------------------------------------------------
+    # Interaction aggregation
     agg_features = interactions.groupby("lead_id").agg(
         session_count=("session_id", "nunique"),
         pages_visited=("page_name", "nunique"),
@@ -203,11 +203,11 @@ def engineer_features(
     agg_features = agg_features.drop(columns=["time_spent_seconds"])
     agg_features = agg_features.join(days_since, how="left")
 
-    # --- Event-based count features --------------------------------------------
+    # Event-based count features
     event_counts = _count_events(interactions)
     agg_features = agg_features.join(event_counts, how="left")
 
-    # --- Merge with lead-level data --------------------------------------------
+    # Merge with lead-level data
     df = leads[["lead_id"]].drop_duplicates().copy()
     df = df.merge(agg_features.reset_index(), on="lead_id", how="left")
 
@@ -219,7 +219,7 @@ def engineer_features(
     lead_dedup = leads[existing_lead_cols].drop_duplicates(subset=["lead_id"], keep="first")
     df = df.merge(lead_dedup, on="lead_id", how="left")
 
-    # --- Encode categoricals ---------------------------------------------------
+    # Encode categoricals
     cat_encode_map = {
         "source": "source_encoded",
         "company_size": "company_size_encoded",
@@ -265,7 +265,7 @@ def _count_events(interactions: pd.DataFrame) -> pd.DataFrame:
     return result.fillna(0)
 
 
-# ─── high-level pipeline function ────────────────────────────────────────────
+# High-level pipeline function
 
 def load_and_preprocess_data(
     leads_path: str = LEADS_PATH,
@@ -326,7 +326,7 @@ def load_and_preprocess_data(
     return X, y, feature_names, label_encoders
 
 
-# ─── quick self-test ─────────────────────────────────────────────────────────
+# Quick self-test
 if __name__ == "__main__":
     X, y, features, encoders = load_and_preprocess_data()
     print(f"\nFeature columns ({len(features)}):")

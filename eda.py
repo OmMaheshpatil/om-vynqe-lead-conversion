@@ -29,7 +29,7 @@ import matplotlib.ticker as mticker
 import seaborn as sns
 from utils import load_raw_data, derive_target, clean_interactions, clean_leads, engineer_features
 
-# ── configuration ─────────────────────────────────────────────────────────────
+# Configuration
 warnings.filterwarnings("ignore")
 OUTPUT_DIR = os.path.join("outputs", "eda")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -46,7 +46,7 @@ FIGSIZE_TALL   = (10, 8)
 sns.set_theme(style="whitegrid", font_scale=1.1)
 
 
-# ── helpers ───────────────────────────────────────────────────────────────────
+# Helpers
 
 def save(fig: plt.Figure, name: str) -> None:
     path = os.path.join(OUTPUT_DIR, name)
@@ -61,7 +61,7 @@ def section(title: str) -> None:
     print(f"{'=' * 60}")
 
 
-# ── 1. LOAD DATA ──────────────────────────────────────────────────────────────
+# 1. LOAD DATA
 
 section("1. LOADING & CLEANING DATA")
 
@@ -78,7 +78,7 @@ print(f"   Leads:        {leads.shape[0]:,} rows")
 print(f"   Interactions: {interactions.shape[0]:,} rows")
 
 
-# ── 2. MISSING VALUE ANALYSIS ─────────────────────────────────────────────────
+# 2. MISSING VALUE ANALYSIS
 
 section("2. MISSING VALUES")
 
@@ -106,7 +106,7 @@ fig.tight_layout()
 save(fig, "01_missing_values_interactions.png")
 
 
-# ── 3. TARGET VARIABLE DISTRIBUTION ──────────────────────────────────────────
+# 3. TARGET VARIABLE DISTRIBUTION
 
 section("3. TARGET VARIABLE DISTRIBUTION")
 
@@ -140,7 +140,7 @@ fig.tight_layout()
 save(fig, "02_target_distribution.png")
 
 
-# ── 4. CONVERSION RATE BY CATEGORICAL FEATURES ───────────────────────────────
+# 4. CONVERSION RATE BY CATEGORICAL FEATURES
 
 section("4. CONVERSION RATES BY CATEGORICAL FEATURES")
 
@@ -188,7 +188,7 @@ plot_conversion_rate(leads, "region",       "Region",         "07_conversion_by_
 plot_conversion_rate(leads, "device_type",  "Device Type",    "08_conversion_by_device.png")
 
 
-# ── 5. ACCOUNT TYPE BREAKDOWN ─────────────────────────────────────────────────
+# 5. ACCOUNT TYPE BREAKDOWN
 
 section("5. ACCOUNT TYPE BREAKDOWN (TARGET DERIVATION)")
 
@@ -210,7 +210,7 @@ if "account_type" in leads.columns:
     save(fig, "09_account_type_distribution.png")
 
 
-# ── 6. INTERACTION EVENT ANALYSIS ────────────────────────────────────────────
+# 6. INTERACTION EVENT ANALYSIS
 
 section("6. INTERACTION EVENT ANALYSIS")
 
@@ -249,7 +249,7 @@ if "event_name" in inter_merged.columns:
     save(fig, "10_event_analysis.png")
 
 
-# ── 7. FUNNEL STAGE ANALYSIS ──────────────────────────────────────────────────
+# 7. FUNNEL STAGE ANALYSIS
 
 section("7. FUNNEL STAGE ANALYSIS")
 
@@ -273,7 +273,7 @@ if "funnel_stage" in inter_merged.columns:
     save(fig, "11_funnel_stage_distribution.png")
 
 
-# ── 8. SESSION-LEVEL BEHAVIORAL FEATURES ─────────────────────────────────────
+# 8. SESSION-LEVEL BEHAVIORAL FEATURES
 
 section("8. SESSION-LEVEL BEHAVIORAL FEATURES")
 
@@ -315,7 +315,7 @@ fig.tight_layout()
 save(fig, "12_behavioral_feature_boxplots.png")
 
 
-# ── 9. FEATURE CORRELATIONS WITH TARGET ───────────────────────────────────────
+# 9. FEATURE CORRELATIONS WITH TARGET
 
 section("9. FEATURE CORRELATIONS WITH TARGET")
 
@@ -339,7 +339,7 @@ fig.tight_layout()
 save(fig, "13_feature_correlations.png")
 
 
-# ── 10. CORRELATION HEATMAP ───────────────────────────────────────────────────
+# 10. CORRELATION HEATMAP
 
 section("10. CORRELATION HEATMAP")
 
@@ -354,7 +354,7 @@ fig.tight_layout()
 save(fig, "14_correlation_heatmap.png")
 
 
-# ── 11. TEMPORAL ANALYSIS ─────────────────────────────────────────────────────
+# 11. TEMPORAL ANALYSIS
 
 section("11. TEMPORAL ANALYSIS")
 
@@ -390,7 +390,7 @@ else:
     print("   [SKIP] No valid 'created_at' timestamps for temporal analysis.")
 
 
-# ── 12. BUTTON CLICK ANALYSIS ─────────────────────────────────────────────────
+# 12. BUTTON CLICK ANALYSIS
 
 section("12. BUTTON CLICK ANALYSIS")
 
@@ -417,7 +417,7 @@ if "button_name" in inter_merged.columns:
     save(fig, "16_button_click_analysis.png")
 
 
-# ── SUMMARY ───────────────────────────────────────────────────────────────────
+# SUMMARY
 
 section("EDA COMPLETE — KEY INSIGHTS SUMMARY")
 
