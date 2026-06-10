@@ -420,7 +420,7 @@ vynqe-lead-conversion/
 
 | Field | Details |
 |-------|---------|
-| **Author** | Pranali |
+| **Author** | OM |
 | **Assessment** | AI/ML Engineer — Vynqe |
 | **Contact** | hr@vynqe.com |
 
