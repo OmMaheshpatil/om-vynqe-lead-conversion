@@ -1,0 +1,12 @@
+{
+  "segment_encoded": 0.137777,
+  "pricing_views": 0.118527,
+  "demo_requests": 0.10029,
+  "whatsapp_clicks": 0.098311,
+  "days_since_first_visit": 0.097017,
+  "source_encoded": 0.096986,
+  "time_spent_minutes": 0.094074,
+  "company_size_encoded": 0.087696,
+  "pages_visited": 0.086273,
+  "session_count": 0.083051
+}
